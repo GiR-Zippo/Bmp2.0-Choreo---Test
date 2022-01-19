@@ -36,37 +36,69 @@
             <Button x:Name="SavePerf" Content="SavePerf"  Grid.Column="9" Click="SavePerf_Click" Width="50" />
         </Grid>
         <Slider x:Name="timebar" Grid.Row="2" Thumb.DragCompleted="timebar_DragCompleted"/>
-        <Grid Grid.Row="3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <DataGrid x:Name="EventTimes" Grid.Column="0" AutoGenerateColumns="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Time in ms" IsReadOnly="true" Width="*" Binding="{Binding}" ></DataGridTextColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Button x:Name="AddTimeStamp" Grid.Row="1" Content="A" Click="AddTimeStamp_Click" ToolTip="Add the current timestamp"/>
-                <Button x:Name="RemoveTimeStamp" Grid.Row="2" Content="R" Click="RemoveTimeStamp_Click" ToolTip="Remove the selected event"/>
-                <Button x:Name="SortTimeStamp" Grid.Row="3" Content="S" Click="SortTimeStamp_Click" ToolTip="Sort the events by time"/>
-            </Grid>
-            <DataGrid AutoGenerateColumns="False" x:Name="Events" Grid.Column="2">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp}"/>
-                    <DataGridTextColumn Header="Performer" Binding="{Binding Performer}"/>
-                    <DataGridTextColumn Header="Modifier" Binding="{Binding Modifier}"/>
-                    <DataGridTextColumn Header="Key" Binding="{Binding Key}"/>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Grid>
+        <TabControl Grid.Row="3">
+            <TabItem Header="Editor">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <DataGrid x:Name="EventTimes" Grid.Column="0" AutoGenerateColumns="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Time in ms" IsReadOnly="true" Width="*" Binding="{Binding}" ></DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Button x:Name="AddTimeStamp" Grid.Row="1" Content="A" Click="AddTimeStamp_Click" ToolTip="Add the current timestamp"/>
+                        <Button x:Name="RemoveTimeStamp" Grid.Row="2" Content="R" Click="RemoveTimeStamp_Click" ToolTip="Remove the selected event"/>
+                        <Button x:Name="SortTimeStamp" Grid.Row="3" Content="S" Click="SortTimeStamp_Click" ToolTip="Sort the events by time"/>
+                    </Grid>
+                    <DataGrid AutoGenerateColumns="False" x:Name="Events" Grid.Column="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp}"/>
+                            <DataGridTextColumn Header="Performer" Binding="{Binding Performer}"/>
+                            <DataGridTextColumn Header="Modifier" Binding="{Binding Modifier}"/>
+                            <DataGridTextColumn Header="Key" Binding="{Binding Key}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="RemoteSettings">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label   Grid.Row="1" Grid.Column="1" Content="PartyToken" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="2" x:Name="PartyToken_TextBox" Text="PartyToken" VerticalAlignment="Center" />
+                    <Grid Grid.Row="2" Grid.ColumnSpan="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="45"/>
+                            <ColumnDefinition Width="45"/>
+                            <ColumnDefinition Width="45"/>
+                        </Grid.ColumnDefinitions>
+                        <Button  Grid.Row="2" Grid.Column="1" Content="Create" Click="Create_Click"/>
+                        <Button  Grid.Row="2" Grid.Column="2" Content="Join" Click="Join_Click"/>
+                        <Button  Grid.Row="2" Grid.Column="3" Content="Leave" Click="Leave_Click"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>signature.snk</AssemblyOriginatorKeyFile>
+    <LangVersion>9</LangVersion>
+    <PackageProjectUrl>https://bardmusicplayer.com</PackageProjectUrl>
+    <Version>2.0.0.0</Version>
+    <Authors>MoogleTroupe</Authors>
+    <Copyright>Copyright © MoogleTroupe 2021</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/BardMusicPlayer/BardMusicPlayer</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+	<Platforms>AnyCPU;x64</Platforms>
+    <Configurations>Debug;Release;Debug_WithSiren;Release_WithSiren</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibZeroTier" Version="1.0.8" />
+    <PackageReference Include="ZeroTier.Sockets" Version="1.8.4" />
+  </ItemGroup>
+
+    <ItemGroup>
+        <ContentWithTargetPath Include="bin\$(Platform)\$(Configuration)\$(TargetFramework)\libzt.dll">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <TargetPath>libzt.dll</TargetPath>
+        </ContentWithTargetPath>
+    </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BardMusicPlayer.Quotidian\BardMusicPlayer.Quotidian.csproj" />
+    <ProjectReference Include="..\BardMusicPlayer.Pigeonhole\BardMusicPlayer.Pigeonhole.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -219,7 +219,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="StaticHelpers.cs" />
+    <Compile Include="EditorTab.cs" />
+    <Compile Include="RemoteSettings.cs" />
+    <Compile Include="Statics\StaticHelpers.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -228,7 +230,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ChoreoFunctions.cs" />
+    <Compile Include="Statics\ChoreoFunctions.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -274,6 +276,10 @@
     <ProjectReference Include="..\BardMusicPlayer.Grunt\BardMusicPlayer.Grunt.csproj">
       <Project>{a4d81a97-6eca-4bc3-9431-351f3f0e0c73}</Project>
       <Name>BardMusicPlayer.Grunt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BardMusicPlayer.Jamboree\BardMusicPlayer.Jamboree.csproj">
+      <Project>{f64a480b-4171-4971-8f77-8d0170f2ff7a}</Project>
+      <Name>BardMusicPlayer.Jamboree</Name>
     </ProjectReference>
     <ProjectReference Include="..\BardMusicPlayer.Pigeonhole\BardMusicPlayer.Pigeonhole.csproj">
       <Project>{55b90022-7775-443a-9ab9-39fe5d69bef6}</Project>

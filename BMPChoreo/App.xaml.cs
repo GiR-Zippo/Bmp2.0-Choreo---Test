@@ -1,6 +1,7 @@
 ﻿using BardMusicPlayer.Choreograph;
 using BardMusicPlayer.Coffer;
 using BardMusicPlayer.Grunt;
+using BardMusicPlayer.Jamboree;
 using BardMusicPlayer.Pigeonhole;
 using BardMusicPlayer.Seer;
 using BardMusicPlayer.Siren;
@@ -24,17 +25,20 @@ namespace BMPChoreo
             // LogManager.Initialize(new(view.Log));
 
             BmpCoffer.Initialize(path + @"\MusicCatalog.db");
-            BmpSeer.Instance.SetupFirewall("BardMusicPlayer");
+            BmpSeer.Instance.SetupFirewall("BMPChoreo");
             BmpSeer.Instance.Start();
             BmpGrunt.Instance.Start();
             BmpChoreograph.Instance.Start();
 
             BmpSiren.Instance.Setup();
+
+            BmpJamboree.Instance.Start();
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             //LogManager.Shutdown();
+            BmpJamboree.Instance.Stop();
 
             if (BmpSiren.Instance.IsReadyForPlayback)
                 BmpSiren.Instance.Stop();

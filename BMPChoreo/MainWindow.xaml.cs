@@ -1,5 +1,6 @@
 ﻿using BardMusicPlayer.Choreograph;
 using BardMusicPlayer.Grunt;
+using BardMusicPlayer.Jamboree;
 using BardMusicPlayer.Seer;
 using BardMusicPlayer.Siren;
 using BardMusicPlayer.Transmogrify.Song;
@@ -30,7 +31,7 @@ namespace BMPChoreo
         private static PlaybackState_Enum PlaybackState;
         private BmpSong _currentSong;
         private double MaxTime = 0;
-        private Game game;
+        private Game game = null;
         private List<PerformerData> _eventsData;
         private int _EventsIndex = 0;
         private bool _Edit = false;
@@ -38,25 +39,28 @@ namespace BMPChoreo
         public MainWindow()
         {
             InitializeComponent();
-            BmpSiren.Instance.SynthTimePositionChanged += Instance_SynthTimePositionChanged;
             BmpSeer.Instance.GameStarted += e => GameStarted(e.Game);
             BmpSeer.Instance.ChatLog += Instance_ChatLog;
+
+            BmpSiren.Instance.SynthTimePositionChanged += Instance_SynthTimePositionChanged;
+
+            BmpJamboree.Instance.OnPartyJoined += Instance_OnPartyJoined;
+            BmpJamboree.Instance.OnPerformanceStart += Instance_OnPerformanceStart;
         }
 
         private void Instance_ChatLog(BardMusicPlayer.Seer.Events.ChatLog seerEvent)
         {
-            if (seerEvent.ChatLogLine.Contains(@"<1234567890>GO!"))
-                this.Dispatcher.BeginInvoke(new Action(() => _ChatLog(seerEvent)));
+            //if (seerEvent.ChatLogLine.Contains(@"<1234567890>GO!"))
+            //    this.Dispatcher.BeginInvoke(new Action(() => _ChatLog(seerEvent)));
         }
 
         private void _ChatLog(BardMusicPlayer.Seer.Events.ChatLog seerEvent)
         {
-            
             if (!_Edit)
             {
-                Thread.Sleep(3400);
                 Edit.Background = Brushes.Yellow;
                 Edit.Content = "REMO";
+                Thread.Sleep(3400);
                 BmpChoreograph.Instance.StartPerformance();
             }
         }
@@ -145,6 +149,9 @@ namespace BMPChoreo
         /// <param name="current_time"></param>
         private void PushTheButton(double current_time)
         {
+            if (game == null)
+                return;
+
             if (PlaybackState == PlaybackState_Enum.PLAYBACK_STATE_STOPPED)
                 return;
 
@@ -176,7 +183,6 @@ namespace BMPChoreo
                 _ = GameExtensions.SyncTapKey(game, (BardMusicPlayer.Quotidian.Enums.Keys)key);
             }
         }
-
 
         private void Play_Click(object sender, RoutedEventArgs e)
         {
@@ -282,51 +288,6 @@ namespace BMPChoreo
             }
         }
 
-        private void timebar_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-        {
-            BmpSiren.Instance.SetPosition((int)this.timebar.Value);
-        }
-
-        /// <summary>
-        /// Add the current timestamp to the "Events" list
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void AddTimeStamp_Click(object sender, RoutedEventArgs e)
-        {
-            var d = Events.ItemsSource as List<PerformerData>;
-            d.Add(new PerformerData { Timestamp = (string)EventTimes.SelectedItem, Key = "", Modifier = "" });
-            Console.WriteLine(d);
-            Events.Items.Refresh();
-
-        }
-
-        /// <summary>
-        /// Removes a selected item from the "Events" list
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RemoveTimeStamp_Click(object sender, RoutedEventArgs e)
-        {
-            var d = Events.ItemsSource as List<PerformerData>;
-            d.RemoveAt(Events.SelectedIndex);
-            Events.Items.Refresh();
-
-        }
-
-        /// <summary>
-        /// sorts the "Events" list with lowest timestamp first
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SortTimeStamp_Click(object sender, RoutedEventArgs e)
-        {
-            var dataSource = Events.ItemsSource as List<PerformerData>;
-            dataSource.Sort(delegate (PerformerData c1, PerformerData c2) { return Convert.ToInt32(c1.Timestamp).CompareTo(Convert.ToInt32(c2.Timestamp)); });
-            Events.Items.Refresh();
-        }
-
-
         /// <summary>
         /// load the performance data from the xml
         /// </summary>
@@ -338,7 +299,7 @@ namespace BMPChoreo
 
             //output a list of PerformanceData
             var xmlList = doc.Root
-                .Descendants("PerformanceData")
+                .Descendants("PerformerData")
                 .Select(node => new PerformerData
                 {
                     Timestamp = node.Element("Timestamp").Value,
