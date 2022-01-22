@@ -1,16 +1,12 @@
 ﻿using BardMusicPlayer.Jamboree.Events;
-using BardMusicPlayer.Jamboree.PartyClient;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using ZeroTier.Sockets;
 
-namespace BardMusicPlayer.Jamboree.PartyServer
+namespace BardMusicPlayer.Jamboree.ZeroTier
 {
     public class ZeroTierPartyClient
     {
@@ -27,17 +23,29 @@ namespace BardMusicPlayer.Jamboree.PartyServer
             objWorkerServerDiscovery.RunWorkerAsync();
         }
 
-        public void SendPacket(PartyOpcodes.OpcodeEnum opcode, string data)
+        public void SetPlayerData(byte type, string name)
+        {
+            svcClient.SetPlayerData(type, name);
+        }
+
+        public void SendPacket(ZeroTierPartyOpcodes.OpcodeEnum opcode, string data)
         {
             if (!svcClient.SendMessage(opcode, data))
                 svcClient.Stop();
         }
 
+        public void SendPacket(byte[] pck)
+        {
+            if (!svcClient.SendMessage(pck))
+                svcClient.Stop();
+        }
+
         public void Close()
         {
-            svcClient.SendMessage(PartyOpcodes.OpcodeEnum.CMSG_TERM_SESSION, "");
+            svcClient.SendMessage(ZeroTierPartyOpcodes.OpcodeEnum.CMSG_TERM_SESSION, "");
             svcClient.Stop();
         }
+
         private void logWorkers_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             // Report thread messages to Console
@@ -49,13 +57,12 @@ namespace BardMusicPlayer.Jamboree.PartyServer
     {
         public bool disposing = false;
         public IPEndPoint remoteServerEndPoint;
-        public int ServerPort = 0;
-        private Socket sender;
+        private PartyGame session = null;
         private BackgroundWorker worker;
 
-        public SocketClient(ref BackgroundWorker worker, IPEndPoint localEndPoint)
+        public SocketClient(ref BackgroundWorker w, IPEndPoint localEndPoint)
         {
-            this.worker = worker;
+            worker = w;
             this.remoteServerEndPoint = localEndPoint;
             worker.ReportProgress(1, "Client");
         }
@@ -63,72 +70,56 @@ namespace BardMusicPlayer.Jamboree.PartyServer
         public void Start(object s, DoWorkEventArgs e)
         {
             byte[] bytes = new byte[1024];
-            //try
+            Socket sender = new Socket(System.Net.Sockets.AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+
+            //Connect to the server
+            sender.Connect(remoteServerEndPoint);
+            //Wait til connected
+            while(!sender.Connected)
+            { Task.Delay(10); }
+            //Create the session
+            session = new PartyGame(sender, false);
+            //Inform we are connected
+            BmpJamboree.Instance.PublishEvent(new PartyConnectionChangedEvent(PartyConnectionChangedEvent.ResponseCode.OK, "Connected"));
+
+            //da loop
+            while (this.disposing == false)
             {
-                sender = new Socket(System.Net.Sockets.AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
-                //try
+                if (!session.Update())
                 {
-                    sender.Connect(remoteServerEndPoint);
-                    //da loop
-                    while (this.disposing == false)
-                    {
-                        if (sender.Poll(100, System.Net.Sockets.SelectMode.SelectRead))
-                        {
-                            int bytesRec = sender.Receive(bytes);
-                            PartyOpcodes.OpcodeEnum opcode = (PartyOpcodes.OpcodeEnum)bytes[0];
-                            string data = Encoding.ASCII.GetString(bytes, 1, bytesRec);
-                            switch (opcode)
-                            {
-                                case PartyOpcodes.OpcodeEnum.SMSG_PERFORMANCE_START:
-                                    BmpJamboree.Instance.PublishEvent(new PerformanceStartEvent(Convert.ToInt64(data)));
-                                    break;
-                            };
-                            Console.WriteLine("Client: Recv: {0}", data);
-                        }
-                    }
-                    // Release the socket.
-                    sender.Shutdown(System.Net.Sockets.SocketShutdown.Both);
-                    sender.Close();
+                    BmpJamboree.Instance.PublishEvent(new PartyConnectionChangedEvent(PartyConnectionChangedEvent.ResponseCode.ERROR, "Disconnected"));
+                    break;
                 }
-                /*catch (ArgumentNullException ane)
-                {
-                    Console.WriteLine("ArgumentNullException : {0}", ane.ToString());
-                }
-                catch (SocketException err)
-                {
-                    Console.WriteLine(err);
-                    Console.WriteLine("SocketErrorCode={0}", err.SocketErrorCode);
-                }*/
+                Task.Delay(5);
             }
-            /*catch (Exception err)
-            {
-                Console.WriteLine(err.ToString());
-            }*/
+            // Remove this session and exit
+            session.CloseConnection();
+            BmpJamboree.Instance.PublishEvent(new PartyConnectionChangedEvent(PartyConnectionChangedEvent.ResponseCode.MESSAGE, "Disconnected"));
         }
 
-        public bool SendMessage(PartyOpcodes.OpcodeEnum opcode, string data)
+        public bool SendMessage(ZeroTierPartyOpcodes.OpcodeEnum opcode, string data)
         {
-            if (sender.Available == -1)
-                return false;
             data = " " + data;
             byte[] msg = Encoding.ASCII.GetBytes(data);
             msg[0] = (byte)opcode;
-            try
-            {
-                int bytesSent = sender.Send(msg);
-            }
-            catch { }
-            return true;
+            return session.SendPacket(msg);
         }
-        public void SendMessage(string data)
+
+        public bool SendMessage(byte[] pck)
         {
-            byte[] msg = Encoding.ASCII.GetBytes("This is a test");
-            int bytesSent = sender.Send(msg);
+            return session.SendPacket(pck);
         }
 
         public void Stop()
         {
             this.disposing = true;
+        }
+
+        public void SetPlayerData(byte type, string name)
+        {
+            var t = session.PartyClient;
+            t.Performer_Type = type;
+            t.Performer_Name = name;
         }
     }
 }

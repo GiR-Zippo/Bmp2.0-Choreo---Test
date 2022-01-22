@@ -1,6 +1,7 @@
 ﻿using BardMusicPlayer.Choreograph;
 using BardMusicPlayer.Grunt;
 using BardMusicPlayer.Jamboree;
+using BardMusicPlayer.Jamboree.Events;
 using BardMusicPlayer.Seer;
 using BardMusicPlayer.Siren;
 using BardMusicPlayer.Transmogrify.Song;
@@ -44,7 +45,9 @@ namespace BMPChoreo
 
             BmpSiren.Instance.SynthTimePositionChanged += Instance_SynthTimePositionChanged;
 
-            BmpJamboree.Instance.OnPartyJoined += Instance_OnPartyJoined;
+            BmpJamboree.Instance.OnPartyCreated += Instance_OnPartyCreated;
+            BmpJamboree.Instance.OnPartyConnectionChanged += Instance_OnPartyConnectionChanged;
+            BmpJamboree.Instance.OnPartyChanged += Instance_OnPartyChanged;
             BmpJamboree.Instance.OnPerformanceStart += Instance_OnPerformanceStart;
         }
 

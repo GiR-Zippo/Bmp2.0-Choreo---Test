@@ -8,7 +8,9 @@ namespace BardMusicPlayer.Jamboree
 {
     public partial class BmpJamboree
     {
-        public EventHandler<PartyJoinedEvent> OnPartyJoined;
+        public EventHandler<PartyCreatedEvent> OnPartyCreated;
+        public EventHandler<PartyConnectionChangedEvent> OnPartyConnectionChanged;
+        public EventHandler<PartyChangedEvent> OnPartyChanged;
         public EventHandler<PerformanceStartEvent> OnPerformanceStart;
 
         private ConcurrentQueue<JamboreeEvent> _eventQueue;
@@ -27,12 +29,21 @@ namespace BardMusicPlayer.Jamboree
                     {
                         switch (meastroEvent)
                         {
-                            case PartyJoinedEvent partyJoined:
-                                if (OnPartyJoined == null)
+                            case PartyCreatedEvent partyCreated:
+                                if (OnPartyCreated == null)
                                     break;
-                                OnPartyJoined(this, partyJoined);
+                                OnPartyCreated(this, partyCreated);
                                 break;
-
+                            case PartyConnectionChangedEvent connectionChanged:
+                                if (OnPartyConnectionChanged == null)
+                                    break;
+                                OnPartyConnectionChanged(this, connectionChanged);
+                                break;
+                            case PartyChangedEvent partyChanged:
+                                if (OnPartyChanged == null)
+                                    break;
+                                OnPartyChanged(this, partyChanged);
+                                break;
                             case PerformanceStartEvent performanceStart:
                                 if (OnPerformanceStart == null)
                                     break;

@@ -1,6 +1,5 @@
 ﻿using BardMusicPlayer.Jamboree.Events;
-using BardMusicPlayer.Jamboree.PartyClient;
-using BardMusicPlayer.Jamboree.PartyServer;
+using BardMusicPlayer.Jamboree.ZeroTier;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,15 +22,14 @@ namespace BardMusicPlayer.Jamboree
         public void CreateParty(string networkId)
         {
             zeroTierConnector = new ZeroTierConnector();
-            string id = networkId + "-";
+            string id = networkId+"-";
             string data = zeroTierConnector.ZeroTierConnect(networkId).Result;
-            id = id + data.Split('.')[3];
+            id = id+data.Split('.')[3];
             _servermode = true;
             var plainTextBytes = Encoding.UTF8.GetBytes(id);
 
             server = new ZeroTierPartyServer(new IPEndPoint(IPAddress.Parse(data), 12345));
-
-            BmpJamboree.Instance.PublishEvent(new PartyJoinedEvent(Convert.ToBase64String(plainTextBytes)));
+            BmpJamboree.Instance.PublishEvent(new PartyCreatedEvent(Convert.ToBase64String(plainTextBytes)));
         }
 
         public void JoinParty(string partycode)
@@ -41,12 +39,10 @@ namespace BardMusicPlayer.Jamboree
             string p = Encoding.UTF8.GetString(base64EncodedBytes);
             string networkId = p.Split('-')[0];
             string host = p.Split('-')[1];
-            Console.WriteLine(p.Split('-')[0]);
             string data = zeroTierConnector.ZeroTierConnect(networkId).Result;
             _servermode = false;
             data = data.Split('.')[0] + "." + data.Split('.')[1] + "." + data.Split('.')[2] + "." + host;
             client = new ZeroTierPartyClient(new IPEndPoint(IPAddress.Parse(data), 12345));
-            BmpJamboree.Instance.PublishEvent(new PartyJoinedEvent("Connected"));
         }
 
         public void LeaveParty()
@@ -68,14 +64,32 @@ namespace BardMusicPlayer.Jamboree
             zeroTierConnector.ZeroTierDisconnect();
         }
 
+#region NetworkSendFunctions
         public void SendPerformanceStart()
         {
             if (_servermode)
-            {
-                long milliseconds = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                server.SendToAll(PartyOpcodes.OpcodeEnum.SMSG_PERFORMANCE_START, milliseconds.ToString());
-            }
+                server.SendToAll(ZeroTierPacketBuilder.PerformanceStart());
         }
+
+        /// <summary>
+        /// Send we joined the party
+        /// | type 0 = bard
+        /// | type 1 = dancer
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="performer_name"></param>
+        public void SendPerformerJoin(byte type, string performername)
+        {
+            if (!_servermode)
+            {
+                client.SetPlayerData(type, performername);
+                client.SendPacket(ZeroTierPacketBuilder.CMSG_JOIN_PARTY(type, performername));
+            }
+            else
+                server.SendToAll(ZeroTierPacketBuilder.CMSG_JOIN_PARTY(type, performername));
+        }
+
+#endregion
 
     }
 }

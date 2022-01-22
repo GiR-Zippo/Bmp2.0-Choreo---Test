@@ -30,10 +30,28 @@ namespace BMPChoreo
             BmpChoreograph.Instance.StartPerformance();
         }
 
-        private void Instance_OnPartyJoined(object sender, PartyJoinedEvent e)
+        private void Instance_OnPartyCreated(object sender, PartyCreatedEvent e)
         {
             string Token = e.Token;
             this.Dispatcher.BeginInvoke(new Action(() => this.PartyToken_TextBox.Text = Token));
+        }
+
+
+        private void Instance_OnPartyConnectionChanged(object sender, PartyConnectionChangedEvent e)
+        {
+            PartyConnectionChangedEvent.ResponseCode code = e.Code;
+            string Message = e.Message;
+            this.Dispatcher.BeginInvoke(new Action(() => this.PartyToken_TextBox.Text = Message));
+
+            //tell the server we are here and a dancer
+            if (code == PartyConnectionChangedEvent.ResponseCode.OK)
+                BmpJamboree.Instance.SendPerformerJoin(1, "test Player");// game.PlayerName);
+        }
+
+        private void Instance_OnPartyChanged(object sender, PartyChangedEvent e)
+        {
+            var t = BmpJamboree.Instance.GetPartyMembers();
+            this.Dispatcher.BeginInvoke(new Action(() => this.PerformerList.ItemsSource = t));
         }
 
         private void Create_Click(object sender, RoutedEventArgs e)

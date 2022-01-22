@@ -9,7 +9,7 @@ namespace BardMusicPlayer.Jamboree.Events
     public sealed class PerformanceStartEvent : JamboreeEvent
     {
         /// <summary>
-        /// Start a performance
+        /// Start the performance received
         /// </summary>
         /// <param name="timestampinMillis">in milliseconds</param>
         internal PerformanceStartEvent(long timestampinMillis) : base(0, false)
@@ -18,6 +18,9 @@ namespace BardMusicPlayer.Jamboree.Events
             SenderTimestamp_in_millis = timestampinMillis;
         }
 
+        /// <summary>
+        /// The host time in milis
+        /// </summary>
         public long SenderTimestamp_in_millis { get; }
 
         public override bool IsValid() => true;
